@@ -1,0 +1,32 @@
+name: Run Unit Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install Miniconda
+        uses: conda-inc/github-action@v2
+        with:
+          install-miniconda: true
+      - name: Create Conda Environment
+        run: |
+          conda create -n tellco-env python=3.9 --yes
+          conda activate tellco-env
+          pip install -r requirements.txt
+      - name: Run Tests
+        run: |
+          conda activate tellco-env
+          pytest
