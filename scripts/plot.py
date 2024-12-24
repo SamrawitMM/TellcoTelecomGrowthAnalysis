@@ -330,3 +330,46 @@ def plot_correlation_heatmap(data, columns, figsize=(12, 8), cmap='coolwarm'):
     sns.heatmap(correlation_matrix, annot=True, fmt='.2f', cmap=cmap, cbar=True)
     plt.title('Correlation Heatmap')
     plt.show()
+
+
+def plot_elbow_curve(k_values, wcss):
+    """
+    Plots the Elbow Curve to visualize the optimal number of clusters.
+
+    Parameters:
+    - k_values: List or array of the number of clusters.
+    - wcss: List or array of the corresponding WCSS (Within-Cluster Sum of Squares) values.
+    """
+    plt.figure(figsize=(8, 5))
+    plt.plot(k_values, wcss, marker='o', linestyle='--')
+    plt.xlabel('Number of Clusters (k)')
+    plt.ylabel('WCSS')
+    plt.title('Elbow Method for Optimal k')
+    plt.show()
+
+
+import matplotlib.pyplot as plt
+
+def plot_user_engagement_clusters(pca_features, cluster_labels, optimal_k):
+    """
+    Plots the user engagement clusters in the PCA space.
+
+    Parameters:
+    - pca_features: The PCA-transformed features (numpy array).
+    - cluster_labels: The cluster labels assigned to each data point.
+    - optimal_k: The optimal number of clusters to be used for plotting.
+    """
+    plt.figure(figsize=(8, 6))
+    
+    # Plot each cluster
+    for cluster in range(optimal_k):
+        cluster_points = pca_features[cluster_labels == cluster]
+        plt.scatter(cluster_points[:, 0], cluster_points[:, 1], label=f'Cluster {cluster}')
+    
+    # Add labels and title
+    plt.xlabel('PCA Component 1')
+    plt.ylabel('PCA Component 2')
+    plt.title('User Engagement Clusters')
+    plt.legend()
+    plt.show()
+
