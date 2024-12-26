@@ -215,3 +215,52 @@ def get_important_features(df, n_top_features=10, handle_missing='mean'):
     top_features = feature_importance_df.head(n_top_features)
 
     return top_features
+
+# Top, Bottom, and Most Frequent values
+def get_top_bottom_frequent(data, column):
+    sorted_column = data[column].sort_values()
+    top_10 = sorted_column.tail(10).values
+    bottom_10 = sorted_column.head(10).values
+    most_frequent = data[column].value_counts().head(10).index.tolist()
+    return top_10, bottom_10, most_frequent
+
+
+def detect_outliers_iqr_and_replace_with_mean(data, skewed_cols, id_col):
+    """
+    Detect outliers in a DataFrame using the IQR method and replace outliers with the mean of the column.
+
+    Parameters:
+    - data: DataFrame
+    - skewed_cols: List of numerical columns to check for outliers.
+    - id_col: The column name used as the identifier (e.g., IMSI).
+
+    Returns:
+    - data: DataFrame with outliers replaced by the mean of the corresponding column.
+    """
+    for col in skewed_cols:
+        if col in data.columns:
+            # Calculate Q1, Q3, and IQR
+            Q1 = data[col].quantile(0.25)
+            Q3 = data[col].quantile(0.75)
+            IQR = Q3 - Q1
+
+            # Define the lower and upper bounds for outliers
+            lower_bound = 0
+            upper_bound = Q3 + 1.5 * IQR
+
+            # Find outliers
+            outliers = data[(data[col] < lower_bound) | (data[col] > upper_bound)]
+
+            # Get the mean of the column to replace outliers
+            mean_value = data[col].mean()  # Calculate mean
+            
+            # Replace outliers with the mean
+            data.loc[data[col] < lower_bound, col] = mean_value
+            data.loc[data[col] > upper_bound, col] = mean_value
+
+            print(f'Column: {col} - Number of outliers replaced with mean: {outliers.shape[0]}')
+            print(f'Lower bound: {lower_bound} & Upper bound: {upper_bound}\n')
+        else:
+            print(f'Column {col} not found in the DataFrame.')
+
+    return data

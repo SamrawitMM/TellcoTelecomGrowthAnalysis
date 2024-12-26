@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import streamlit as st
 
 
 def plot_histograms(data, numerical_columns, cols=4, figsize=(30, 60)):
@@ -41,6 +42,7 @@ def plot_histograms(data, numerical_columns, cols=4, figsize=(30, 60)):
 
     # Show the plot
     plt.show()
+    st.pyplot(fig)
 
 
 
@@ -82,6 +84,8 @@ def plot_boxplots(data, numerical_columns, cols=4, figsize=(30, 60)):
 
     # Show the plot
     plt.show()
+    st.pyplot(fig)
+
 
 
     # Function to perform analysis on handsets data
@@ -107,269 +111,143 @@ def analyze_handsets_data(telecom_data):
     return top_10_handsets, top_3_manufacturers, top_5_handsets_per_manufacturer
 
 
-
+# Function to plot a customizable bar chart
 def plot_bar_chart(data, x_col, y_col, x_label="Number of Users", y_label="Handset Type", 
                    title="Top 10 Handsets", color_palette="viridis", horizontal=False):
     """
     Function to plot a customizable bar chart with an option for vertical or horizontal bars.
-    
-    Parameters:
-    - data: The data to plot, which should be a pandas DataFrame or Series.
-    - x_col: The column name to use for the X axis.
-    - y_col: The column name to use for the Y axis.
-    - x_label: The label for the X axis.
-    - y_label: The label for the Y axis.
-    - title: The title of the chart.
-    - color_palette: The color palette to use for the bars.
-    - horizontal: Boolean indicating whether the bars should be horizontal (True) or vertical (False).
     """
     # Check if the data is a DataFrame or Series and plot accordingly
-    plt.figure(figsize=(12, 6))
-    
+    fig, ax = plt.subplots(figsize=(12, 6))  # Create figure and axis
     if isinstance(data, pd.DataFrame):
-        # Plotting a DataFrame (expects two columns)
         if horizontal:
-            # Horizontal bar plot
-            sns.barplot(x=data[y_col], y=data[x_col].astype(str), palette=color_palette)
-            plt.xlabel(y_label)
-            plt.ylabel(x_label)
+            sns.barplot(x=data[y_col], y=data[x_col].astype(str), palette=color_palette, ax=ax)
+            ax.set_xlabel(y_label)
+            ax.set_ylabel(x_label)
         else:
-            # Vertical bar plot
-            sns.barplot(x=data[x_col], y=data[y_col], palette=color_palette)
-            plt.xlabel(x_label)
-            plt.ylabel(y_label)
+            sns.barplot(x=data[x_col], y=data[y_col], palette=color_palette, ax=ax)
+            ax.set_xlabel(x_label)
+            ax.set_ylabel(y_label)
     
     elif isinstance(data, pd.Series):
-        # Plotting a Series (expects index for x-axis and values for y-axis)
         if horizontal:
-            # Horizontal bar plot
-            sns.barplot(x=data.values, y=data.index.astype(str), palette=color_palette)
-            plt.xlabel(y_label)
-            plt.ylabel(x_label)
+            sns.barplot(x=data.values, y=data.index.astype(str), palette=color_palette, ax=ax)
+            ax.set_xlabel(y_label)
+            ax.set_ylabel(x_label)
         else:
-            # Vertical bar plot
-            sns.barplot(x=data.index.astype(str), y=data.values, palette=color_palette)
-            plt.xlabel(x_label)
-            plt.ylabel(y_label)
+            sns.barplot(x=data.index.astype(str), y=data.values, palette=color_palette, ax=ax)
+            ax.set_xlabel(x_label)
+            ax.set_ylabel(y_label)
     
     else:
         raise ValueError("Data must be a pandas DataFrame or Series.")
     
-    # Set the plot labels and title
-    plt.title(title)
-    
-    # Rotate x-axis labels if they are too long (for better readability)
+    ax.set_title(title)
     if not horizontal:
-        plt.xticks(rotation=45, ha="right")  # Rotate labels for better readability and align right
-    
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha="right")  # Rotate labels for better readability
     plt.tight_layout()
     plt.show()
-
+    st.pyplot(fig)
 
 
 # Customizable function to plot a pie chart
 def plot_pie_chart(data, title="Top 3 Handset Manufacturers", colors=None, startangle=140, autopct='%1.1f%%'):
     """
     Function to plot a customizable pie chart.
-    
-    Parameters:
-    - data: The data to plot, which should be a series with values for the pie chart.
-    - title: The title of the pie chart.
-    - colors: The colors to use in the pie chart (optional).
-    - startangle: The angle at which to start the pie chart.
-    - autopct: The format for displaying percentage values.
     """
     if colors is None:
         colors = sns.color_palette("pastel")[:len(data)]
         
-    plt.figure(figsize=(8, 8))
-    plt.pie(
+    fig, ax = plt.subplots(figsize=(8, 8))  # Create figure and axis
+    ax.pie(
         data.values,
         labels=data.index,
         autopct=autopct,
         startangle=startangle,
         colors=colors
     )
-    plt.title(title)
+    ax.set_title(title)
     plt.show()
+    st.pyplot(fig)
 
 
-
-# Stacked bar plot
-def plot_stacked_bar(data, x_col, y_cols, labels=None, colors=None, title=None, xlabel=None, ylabel=None, figsize=(10, 6), rotation=90, ha='right', va='center'):
-    """
-    Creates a stacked bar plot using seaborn for the given DataFrame.
-
-    Parameters:
-    - data (DataFrame): The data containing the columns to plot.
-    - x_col (str): Column name for the x-axis (categorical variable).
-    - y_cols (list): List of column names for the y-axis (values to stack).
-    - labels (list): Labels for the legend. Defaults to the y_cols names.
-    - colors (list): Colors for the stacked bars. Defaults to seaborn's default colors.
-    - title (str): Title of the plot. Defaults to None.
-    - xlabel (str): Label for the x-axis. Defaults to None.
-    - ylabel (str): Label for the y-axis. Defaults to None.
-    - figsize (tuple): Figure size. Defaults to (10, 6).
-    - rotation (int): Rotation angle for x-axis labels. Defaults to 90.
-    - ha (str): Horizontal alignment of x-axis labels. Defaults to 'right'.
-    - va (str): Vertical alignment of x-axis labels. Defaults to 'center'.
-
-    Returns:
-    - None
-    """
-    # Ensure y_cols exist in the DataFrame
-    for col in y_cols:
-        if col not in data.columns:
-            raise ValueError(f"Column '{col}' not found in the data.")
-
-    # Default labels and colors
-    if labels is None:
-        labels = y_cols
-    if colors is None:
-        colors = sns.color_palette("Set2", len(y_cols))
-
-    # Create the stacked bar plot
-    plt.figure(figsize=figsize)
-
-    # Initialize the bottom for stacking
-    bottom = [0] * len(data)
-
-    # Plot each y_col on top of the previous one using the bottom argument for stacking
-    for idx, y_col in enumerate(y_cols):
-        sns.barplot(x=data[x_col], y=data[y_col], color=colors[idx], label=labels[idx], bottom=bottom)
-        bottom = [b + data[y_col][i] for i, b in enumerate(bottom)]  # Update bottom for stacking
-
-    # Customize the plot
-    if title:
-        plt.title(title)
-    if xlabel:
-        plt.xlabel(xlabel)
-    if ylabel:
-        plt.ylabel(ylabel)
-
-    # Adjust x-axis labels
-    plt.xticks(rotation=rotation, ha=ha, va=va)
-    plt.gca().tick_params(axis='x', pad=15)  # Increase padding for better spacing
-
-    # Customize legend
-    plt.legend(title="Data Type")
-    
-    # Adjust layout and show plot
-    plt.tight_layout()
-    plt.show()
-
-# Plot a stacked bar chart for the given data
+# Stacked bar plot with ax
 def plot_stacked_bar(data, title, x_col, y_cols, labels, colors=None, figsize=(10, 6), 
-                     xlabel=None, ylabel=None, rotation=45, ha='center', va='center'):
+                             xlabel=None, ylabel=None, rotation=45, ha='center', va='center'):
     """
-    Function to plot a stacked bar chart for the given data.
-    
-    Parameters:
-    - data: The DataFrame containing the data to plot
-    - title: Title of the plot
-    - x_col: The column to use for the x-axis (e.g., 'IMSI')
-    - y_cols: List of columns to stack on the y-axis
-    - labels: List of labels corresponding to the y_cols
-    - colors: Optional list of colors to use for the bars (default is None)
-    - figsize: Optional tuple specifying the figure size (default is (10, 6))
-    - xlabel: Optional label for the x-axis (default is None)
-    - ylabel: Optional label for the y-axis (default is None)
-    - rotation: Optional rotation angle for x-axis labels (default is 0)
-    - ha: Horizontal alignment for legend labels (default is 'center')
-    - va: Vertical alignment for legend labels (default is 'center')
+    Function to plot a stacked bar chart with Axes object (ax).
     """
-    # Plotting the stacked bar chart
-    ax = data.set_index(x_col)[y_cols].plot(kind='bar', stacked=True, figsize=figsize, cmap='viridis', color=colors)
+    fig, ax = plt.subplots(figsize=figsize)  # Create figure and axis
+    data.set_index(x_col)[y_cols].plot(kind='bar', stacked=True, figsize=figsize, cmap='viridis', color=colors, ax=ax)
 
-    # Customize the plot
     if title:
         ax.set_title(title)
     if xlabel:
         ax.set_xlabel(xlabel)
     if ylabel:
         ax.set_ylabel(ylabel)
-    ax.set_xticklabels(data[x_col], rotation=rotation)  # Rotate x-axis labels for better visibility
 
-    # Add custom labels if provided
+    ax.set_xticklabels(data[x_col], rotation=rotation)
+    
     if labels:
         ax.legend(labels, title='Applications', loc='upper right', fontsize='small',
                   bbox_to_anchor=(1.0, 1.0), frameon=True, 
                   handlelength=2.0, labelspacing=1.5)
-
-        # Adjust label alignment inside the legend box using ha='right' and va='top'
         for label in ax.get_legend().get_texts():
-            label.set_horizontalalignment(ha)  # Align horizontally as per parameter
-            label.set_verticalalignment(va)  # Align vertically as per parameter
+            label.set_horizontalalignment(ha)
+            label.set_verticalalignment(va)
 
-    # Adjust layout to prevent label and legend overlap
     plt.tight_layout()
     plt.subplots_adjust(right=0.85)  # Adjust space on the right for the legend
-
-    # Show the plot
     plt.show()
+    st.pyplot(fig)
+
 
 # Plot a correlation heatmap for selected numeric columns
 def plot_correlation_heatmap(data, columns, figsize=(12, 8), cmap='coolwarm'):
     """
     Function to plot a correlation heatmap for selected numeric columns.
-
-    Parameters:
-    - data: DataFrame containing the data to plot
-    - columns: List of column names to include in the correlation matrix
-    - figsize: Tuple specifying the figure size (default is (12, 8))
-    - cmap: Colormap for the heatmap (default is 'coolwarm')
     """
-    # Selecting relevant numeric columns for correlation
     correlation_data = data[columns]
-    
-    # Calculating the correlation matrix
     correlation_matrix = correlation_data.corr()
 
-    # Creating the heatmap
-    plt.figure(figsize=figsize)
-    sns.heatmap(correlation_matrix, annot=True, fmt='.2f', cmap=cmap, cbar=True)
-    plt.title('Correlation Heatmap')
+    fig, ax = plt.subplots(figsize=figsize)  # Create figure and axis
+    sns.heatmap(correlation_matrix, annot=True, fmt='.2f', cmap=cmap, cbar=True, ax=ax)
+    ax.set_title('Correlation Heatmap')
     plt.show()
+    st.pyplot(fig)
 
 
+# Elbow curve plot for k-values and WCSS
 def plot_elbow_curve(k_values, wcss):
     """
     Plots the Elbow Curve to visualize the optimal number of clusters.
-
-    Parameters:
-    - k_values: List or array of the number of clusters.
-    - wcss: List or array of the corresponding WCSS (Within-Cluster Sum of Squares) values.
     """
-    plt.figure(figsize=(8, 5))
-    plt.plot(k_values, wcss, marker='o', linestyle='--')
-    plt.xlabel('Number of Clusters (k)')
-    plt.ylabel('WCSS')
-    plt.title('Elbow Method for Optimal k')
+    fig, ax = plt.subplots(figsize=(8, 5))  # Create figure and axis
+    ax.plot(k_values, wcss, marker='o', linestyle='--')
+    ax.set_xlabel('Number of Clusters (k)')
+    ax.set_ylabel('WCSS')
+    ax.set_title('Elbow Method for Optimal k')
     plt.show()
+    st.pyplot(fig)
 
 
-import matplotlib.pyplot as plt
-
+# Plot user engagement clusters with PCA
 def plot_user_engagement_clusters(pca_features, cluster_labels, optimal_k):
     """
     Plots the user engagement clusters in the PCA space.
-
-    Parameters:
-    - pca_features: The PCA-transformed features (numpy array).
-    - cluster_labels: The cluster labels assigned to each data point.
-    - optimal_k: The optimal number of clusters to be used for plotting.
     """
-    plt.figure(figsize=(8, 6))
-    
-    # Plot each cluster
+    fig, ax = plt.subplots(figsize=(8, 6))  # Create figure and axis
     for cluster in range(optimal_k):
         cluster_points = pca_features[cluster_labels == cluster]
-        plt.scatter(cluster_points[:, 0], cluster_points[:, 1], label=f'Cluster {cluster}')
+        ax.scatter(cluster_points[:, 0], cluster_points[:, 1], label=f'Cluster {cluster}')
     
-    # Add labels and title
-    plt.xlabel('PCA Component 1')
-    plt.ylabel('PCA Component 2')
-    plt.title('User Engagement Clusters')
-    plt.legend()
+    ax.set_xlabel('PCA Component 1')
+    ax.set_ylabel('PCA Component 2')
+    ax.set_title('User Engagement Clusters')
+    ax.legend()
     plt.show()
+    st.pyplot(fig)
+
+
 
